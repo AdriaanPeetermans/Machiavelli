@@ -16,6 +16,10 @@ public enum Character {
 		this.name = name;
 	}
 	
+	public String toString() {
+		return this.name;
+	}
+	
 	public final int number;
 	
 	public final String name;
