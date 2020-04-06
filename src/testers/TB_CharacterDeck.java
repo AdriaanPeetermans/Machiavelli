@@ -26,5 +26,16 @@ public class TB_CharacterDeck {
 		for (Character character : deck1) {
 			System.out.println(character);
 		}
+		
+		System.out.println(" ");
+		System.out.println("Test 2: available characters");
+		CharacterDeck deck2 = new CharacterDeck(null);
+		for (int i = 0; i < 4; i++) {
+			System.out.println(deck2.popChar());
+		}
+		deck2.resetAvailableChars();
+		for (int i = 0; i < 4; i++) {
+			System.out.println(deck2.popChar());
+		}
 	}
 }

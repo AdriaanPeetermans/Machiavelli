@@ -1,6 +1,9 @@
 package game.engine;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -55,14 +58,167 @@ public class Engine {
 	
 	private final int numberPlayers;
 	
-	public final List<Player> players;
+	private final List<Player> players;
 	
 	private final CharacterDeck characterDeck;
 	
 	private final CardDeck cardDeck;
 	
+	private HashMap<Character, Integer> chosenChars;
+	
+	/**
+	 * This attribute contains the current king player number. The value is initialized to 0.
+	 */
+	private int kingPlayer = 0;
+	
+	/**
+	 * Start the engine!
+	 */
 	public void start() {
+		this.initializeGame();
+		this.distributeChars();
+	}
+	
+	/**
+	 * Prepare this game to start the first round:
+	 *  - Provide the player the number of players in this game
+	 *  - Provide each player a unique player number
+	 *  - Give the king to a random player
+	 */
+	private void initializeGame() {
+		this.provideNumberPlayers();
+		this.providePlayerNumber();
+		this.provideKing();
+	}
+	
+	private void provideNumberPlayers() {
+		for (Player player : this.players) {
+			player.setNumberPlayers(this.numberPlayers);
+		}
+	}
+	
+	private void providePlayerNumber() {
+		int number = 0;
+		for (Player player : this.players) {
+			player.setPlayerNumber(number);
+		}
+	}
+	
+	private void provideKing() {
+		for (Player player : this.players) {
+			player.setKing(this.kingPlayer);
+		}
+	}
+	
+	/**
+	 * This method will distribute the characters over the different players. It will execute the
+	 * following steps:
+	 *  - Provide the players the information of the open characters (if any)
+	 *  - Provide the king player with the information of the top character
+	 *  - Provide each player with a set of characters, from which he can choose one or put one away
+	 *    in case numberPlayers == 2
+	 *  - Obtain the characters chosen by each player
+	 *  - Obtain the characters put away by each player, in case numberPlayers == 2
+	 */
+	private void distributeChars() {
+		this.provideOpenChars();
+		this.provideKingTopChar();
+		this.provideObtainPlayerChars();
+	}
+	
+	private void provideOpenChars() {
+		int numberOpenChars = 0;
+		switch (this.numberPlayers) {
+		case 4:
+			numberOpenChars = 2;
+			break;
+		case 5:
+			numberOpenChars = 1;
+			break;
+		}
+		HashSet<Character> openChars = new HashSet<Character>(2);
+		for (int i = 0; i < numberOpenChars; i++) {
+			openChars.add(this.characterDeck.popChar());
+		}
+		if (numberOpenChars > 0) {
+			for (Player player : this.players) {
+				player.setOpenChars(openChars);
+			}
+		}
+	}
+	
+	private void provideKingTopChar() {
+		Character topChar = this.characterDeck.popChar();
+		this.players.get(this.kingPlayer).setKingChar(topChar);
+	}
+	
+	private void provideObtainPlayerChars() {
+		PlayerIterator playerIterator = new PlayerIterator(this);
+		while (playerIterator.hasNext()) {
+			Player currentPlayer = playerIterator.next();
+			currentPlayer.setCharsToChoose(this.characterDeck.getAvailableChars());
+			
+			// Engine should still check if character is valid, and otherwise rerun!
+			Character chosenChar = currentPlayer.getChosenChar();
+			this.characterDeck.removeAvailableChar(chosenChar);
+			
+			if ((this.numberPlayers == 2) && !(playerIterator.isKing()) && !(playerIterator.isLast())) {
+				
+				// Engine should still check if character is valid, and otherwise rerun!
+				Character putAwayChar = currentPlayer.getPutAwayChar();
+				this.characterDeck.removeAvailableChar(putAwayChar);
+			}
+		}
+	}
+	
+	/**
+	 * This Iterator implementation enables the engine to iterate over all players in the correct
+	 * (starting with the king player) and the correct multiplicity (twice for a game of 2 players).
+	 */
+	private class PlayerIterator implements Iterator<Player> {
 		
+		public PlayerIterator(Engine engine) {
+			this.engine = engine;
+			if (this.engine.numberPlayers == 2) {
+				this.numberIter = 4;
+			}
+			else {
+				this.numberIter = this.engine.numberPlayers;
+			}
+			this.currentPlayer = this.engine.kingPlayer;
+		}
+		
+		private final Engine engine;
+		
+		private final int numberIter;
+		
+		private int iter = 0;
+		
+		private int currentPlayer;
+		
+		public boolean isKing() {
+			return this.iter == 1;
+		}
+		
+		public boolean isLast() {
+			return this.iter == this.numberIter;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return this.iter < this.numberIter;
+		}
+
+		@Override
+		public Player next() {
+			Player result = this.engine.players.get(this.currentPlayer);
+			this.iter ++;
+			this.currentPlayer ++;
+			if (this.currentPlayer >= this.engine.numberPlayers) {
+				this.currentPlayer = 0;
+			}
+			return result;
+		}
 	}
 
 }

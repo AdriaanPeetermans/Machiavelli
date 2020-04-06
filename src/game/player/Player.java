@@ -2,6 +2,8 @@ package game.player;
 
 import java.util.Set;
 
+import game.helpers.Character;
+
 public interface Player {
 	
 	/**
@@ -21,7 +23,7 @@ public interface Player {
 	
 	/**
 	 * Provide the player with the information which player is assigned king in the round that will
-	 * follow. This method will only be used at the start of the game before the first round.
+	 * follow.
 	 * 
 	 * @param number	An integer representing the king for the next round.
 	 */

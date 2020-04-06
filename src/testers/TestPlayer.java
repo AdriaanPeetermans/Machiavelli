@@ -3,6 +3,7 @@ package testers;
 import java.util.Set;
 
 import game.player.Player;
+import game.helpers.Character;
 
 public class TestPlayer implements Player {
 	
