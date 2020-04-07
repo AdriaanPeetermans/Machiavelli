@@ -49,14 +49,48 @@ public class CharacterDeck implements Iterable<Character> {
 	}
 	
 	/**
-	 * Generate a random character from the set of characters that have not yet been chosen.
+	 * Generate a random character from the set of characters that have not yet been chosen. This
+	 * method will return the null object if the available character set is empty.
 	 * 
 	 * @return	A random character that has not yet been chosen.
 	 */
 	public Character popChar() {
+		if (this.availableChars.size() == 0) {
+			return null;
+		}
 		int item = new Random().nextInt(this.availableChars.size());
 		int i = 0;
 		for (Character character : this.availableChars) {
+			if (i == item) {
+				this.availableChars.remove(character);
+				return character;
+			}
+			i ++;
+		}
+		return null;
+	}
+	
+	/**
+	 * Generate a random character from the set of characters that have not yet been chosen. The king
+	 * character will not be picked and will stay available if it already was before. This method
+	 * will return the null object if the available character set only contains the king or no
+	 * characters at all.
+	 * 
+	 * @return	A random character that has not yet been chosen, that is not the king.
+	 */
+	public Character popCharNoKing() {
+		HashSet<Character> otherChars = new HashSet<Character>(this.availableChars.size());
+		for (Character character : this.availableChars) {
+			if (!character.equals(Character.KONING)) {
+				otherChars.add(character);
+			}
+		}
+		if (otherChars.size() == 0) {
+			return null;
+		}
+		int item = new Random().nextInt(otherChars.size());
+		int i = 0;
+		for (Character character : otherChars) {
 			if (i == item) {
 				this.availableChars.remove(character);
 				return character;
@@ -96,6 +130,30 @@ public class CharacterDeck implements Iterable<Character> {
 	 */
 	public void removeAvailableChar(Character character) {
 		this.availableChars.remove(character);
+	}
+	
+	/**
+	 * This method return true if the given character is still in the set of available characters.
+	 * It returns false otherwise.
+	 * 
+	 * @param character	The character to be checked.
+	 * 
+	 * @return	A boolean value stating if this character is in the set of available characters.
+	 */
+	public boolean isAvailable(Character character) {
+		return this.availableChars.contains(character);
+	}
+	
+	/**
+	 * Add the given character to the set of available characters. If the character is already in
+	 * this set, this method will have no effect.
+	 * 
+	 * @param character	The character to be added to the set.
+	 */
+	public void makeAvailable(Character character) {
+		if (!this.availableChars.contains(character)) {
+			this.availableChars.add(character);
+		}
 	}
 	
 	/**

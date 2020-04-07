@@ -28,6 +28,7 @@ public class Engine {
 		this.players = this.initializePlayers(players);
 		this.characterDeck = new CharacterDeck(characters);
 		this.cardDeck = new CardDeck(cards);
+		this.chosenChars = new HashMap<Character, Integer>(this.numberPlayers);
 	}
 	
 	/**
@@ -67,6 +68,12 @@ public class Engine {
 	private HashMap<Character, Integer> chosenChars;
 	
 	/**
+	 * This attribute contains the character that was on top of the character deck and can be chosen
+	 * again by the last player in a game with 7 players.
+	 */
+	private Character topChar;
+	
+	/**
 	 * This attribute contains the current king player number. The value is initialized to 0.
 	 */
 	private int kingPlayer = 0;
@@ -101,6 +108,7 @@ public class Engine {
 		int number = 0;
 		for (Player player : this.players) {
 			player.setPlayerNumber(number);
+			number ++;
 		}
 	}
 	
@@ -138,7 +146,7 @@ public class Engine {
 		}
 		HashSet<Character> openChars = new HashSet<Character>(2);
 		for (int i = 0; i < numberOpenChars; i++) {
-			openChars.add(this.characterDeck.popChar());
+			openChars.add(this.characterDeck.popCharNoKing());
 		}
 		if (numberOpenChars > 0) {
 			for (Player player : this.players) {
@@ -148,24 +156,29 @@ public class Engine {
 	}
 	
 	private void provideKingTopChar() {
-		Character topChar = this.characterDeck.popChar();
-		this.players.get(this.kingPlayer).setKingChar(topChar);
+		this.topChar = this.characterDeck.popChar();
+		this.players.get(this.kingPlayer).setKingChar(this.topChar);
 	}
 	
 	private void provideObtainPlayerChars() {
 		PlayerIterator playerIterator = new PlayerIterator(this);
 		while (playerIterator.hasNext()) {
 			Player currentPlayer = playerIterator.next();
+			if ((this.numberPlayers == 7) && (playerIterator.isLast())) {
+				this.characterDeck.makeAvailable(this.topChar);
+			}
 			currentPlayer.setCharsToChoose(this.characterDeck.getAvailableChars());
-			
-			// Engine should still check if character is valid, and otherwise rerun!
-			Character chosenChar = currentPlayer.getChosenChar();
+			Character chosenChar = null;
+			while (!this.characterDeck.isAvailable(chosenChar)) {
+				chosenChar = currentPlayer.getChosenChar();
+			}
 			this.characterDeck.removeAvailableChar(chosenChar);
-			
+			this.chosenChars.put(chosenChar, playerIterator.currentPlayer);
 			if ((this.numberPlayers == 2) && !(playerIterator.isKing()) && !(playerIterator.isLast())) {
-				
-				// Engine should still check if character is valid, and otherwise rerun!
-				Character putAwayChar = currentPlayer.getPutAwayChar();
+				Character putAwayChar = null;
+				while (!this.characterDeck.isAvailable(putAwayChar)) {
+					putAwayChar = currentPlayer.getPutAwayChar();
+				}
 				this.characterDeck.removeAvailableChar(putAwayChar);
 			}
 		}
@@ -173,19 +186,20 @@ public class Engine {
 	
 	/**
 	 * This Iterator implementation enables the engine to iterate over all players in the correct
-	 * (starting with the king player) and the correct multiplicity (twice for a game of 2 players).
+	 * order (starting with the king player) and the correct multiplicity (twice for a game of 2
+	 * players).
 	 */
 	private class PlayerIterator implements Iterator<Player> {
 		
 		public PlayerIterator(Engine engine) {
 			this.engine = engine;
-			if (this.engine.numberPlayers == 2) {
-				this.numberIter = 4;
+			if ((this.engine.numberPlayers == 2) || (this.engine.numberPlayers == 3)) {
+				this.numberIter = this.engine.numberPlayers*2;
 			}
 			else {
 				this.numberIter = this.engine.numberPlayers;
 			}
-			this.currentPlayer = this.engine.kingPlayer;
+			this.nextPlayer = this.engine.kingPlayer;
 		}
 		
 		private final Engine engine;
@@ -195,6 +209,8 @@ public class Engine {
 		private int iter = 0;
 		
 		private int currentPlayer;
+		
+		private int nextPlayer;
 		
 		public boolean isKing() {
 			return this.iter == 1;
@@ -211,11 +227,12 @@ public class Engine {
 
 		@Override
 		public Player next() {
+			this.currentPlayer = this.nextPlayer;
 			Player result = this.engine.players.get(this.currentPlayer);
 			this.iter ++;
-			this.currentPlayer ++;
-			if (this.currentPlayer >= this.engine.numberPlayers) {
-				this.currentPlayer = 0;
+			this.nextPlayer ++;
+			if (this.nextPlayer >= this.engine.numberPlayers) {
+				this.nextPlayer = 0;
 			}
 			return result;
 		}

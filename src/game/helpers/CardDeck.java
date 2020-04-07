@@ -24,7 +24,7 @@ public class CardDeck {
 	 * @return	A fresh initialized set of cards.
 	 */
 	private Set<Card> initializeCards() {
-		
+		return null;
 	}
 	
 	private final Set<Card> cards;
