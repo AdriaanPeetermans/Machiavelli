@@ -181,9 +181,9 @@ public interface Player {
 	
 	/**
 	 * Ask the current active player what will be his move related to his chosen character. This
-	 * method will be invoked three times during a player's turn. A player has to return a CharMove
-	 * object once, and the null object twice. If the player does not do this, this method will be
-	 * invoked again.
+	 * method will be invoked three times during a player's turn. A player has to return a valid 
+	 * CharMove object three times. If the player does not do this, this method will be invoked
+	 * again.
 	 * 
 	 * @return	A CharMove object containing all information about the chosen move of the active
 	 * 			player.
@@ -211,8 +211,8 @@ public interface Player {
 	
 	/**
 	 * This method will only be called at the current active player. It asks the player for which
-	 * buildings he wants to build during this round. If the player wants to build no building, the
-	 * null object should be returned. The returned set should only contain one card that was 
+	 * buildings he wants to build during this round. If the player wants to build no building, an
+	 * empty set should be returned. The returned set should only contain one card that was 
 	 * previously in the current player's hand. Only if this player has chosen the character
 	 * bouwmeester, he can build two additional cards during this round. If the player returns a
 	 * wrong set of cards, this method will be invoked again. If the player cannot pay for this set,
