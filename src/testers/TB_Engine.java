@@ -11,7 +11,7 @@ public class TB_Engine {
 	public static void main(String[] args) {
 		System.out.println("Test player shuffling:");
 		Set<Player> players = new HashSet<Player>(4);
-		for (int i = 0; i < 7; i++) {
+		for (int i = 0; i < 2; i++) {
 			players.add(new TestPlayer());
 		}
 		Engine engine = new Engine(players, null, null);

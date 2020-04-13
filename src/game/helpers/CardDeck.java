@@ -14,13 +14,13 @@ public class CardDeck {
 	 * @param cards	The different cards to be put in the deck.
 	 */
 	public CardDeck(Set<Card> cards, String dbFileName) {
+		this.dbFileName = dbFileName;
 		if (cards == null) {
 			this.cards = this.initializeCards();
 		}
 		else {
 			this.cards = cards;
 		}
-		this.dbFileName = dbFileName;
 		this.drawnCards = new HashSet<Card>();
 	}
 	

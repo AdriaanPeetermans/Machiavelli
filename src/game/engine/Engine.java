@@ -31,9 +31,6 @@ public class Engine {
 		this.characterDeck = new CharacterDeck(characters);
 		this.cardDeck = new CardDeck(cards, "src/game/cards/db_cards.txt");
 		this.initializeChosenChars();
-		this.initializeCoins(2);
-		this.initializeCards(4);
-		this.initializeCity();
 	}
 	
 	/**
@@ -184,7 +181,8 @@ public class Engine {
 	
 	/**
 	 * This method will handle the building action of the given player. It will add the build cards
-	 * to the players city and notify all players about the new city of the player.
+	 * to the players city, subtract the number of coins for the given player and notify all players
+	 * about the new city of the player.
 	 * 
 	 * @param playerNumber	An integer representing the current player who wants to build the given
 	 * 						set of build cards.
@@ -192,6 +190,12 @@ public class Engine {
 	 */
 	private void handleBuild(int playerNumber, Set<Card> build) {
 		this.addToCity(playerNumber, build);
+		int coins = this.getCoins(playerNumber);
+		for (Card card : build) {
+			coins -= card.cost;
+		}
+		this.setCoins(playerNumber, coins);
+		this.removeCards(playerNumber, build);
 	}
 	
 	/**
@@ -366,6 +370,7 @@ public class Engine {
 	}
 	
 	private void initializeCoins(int initCoins) {
+		this.coins = new HashMap<Integer, Integer>(this.numberPlayers);
 		for (int i = 0; i < this.numberPlayers; i++) {
 			this.setCoins(i, initCoins);
 		}
@@ -374,9 +379,27 @@ public class Engine {
 	private HashMap<Integer, Integer> coins;
 	
 	private void initializeCards(int numberCards) {
+		this.cards = new HashMap<Integer, Set<Card>>(this.numberPlayers);
 		for (int i = 0; i < this.numberPlayers; i++) {
 			this.addCards(i, this.cardDeck.drawCard(numberCards));
 		}
+	}
+	
+	/**
+	 * This method will remove the given set of cards from the set of cards the given player owns. If
+	 * some card is not owned by the given player, this method will have no effect for that card. At
+	 * the end, this method will also notify all players about the changed amount of cards.
+	 * 
+	 * @param playerNumber	An integer representing the player for who the cards should be removed.
+	 * @param cards			The set of cards that should be removed for the given player.
+	 */
+	private void removeCards(int playerNumber, Set<Card> cards) {
+		for (Card card : cards) {
+			if (this.cards.get(playerNumber).contains(card)) {
+				this.cards.get(playerNumber).remove(card);
+			}
+		}
+		this.notifyPlayersCards(playerNumber);
 	}
 	
 	/**
@@ -388,8 +411,13 @@ public class Engine {
 	 */
 	private void addCards(int playerNumber, Set<Card> cards) {
 		Set<Card> oldCards = this.cards.get(playerNumber);
-		//Make sure that cards that look the same are still different objects:
-		oldCards.addAll(cards);
+		if (oldCards == null) {
+			oldCards = cards;
+		}
+		else {
+			//Make sure that cards that look the same are still different objects:
+			oldCards.addAll(cards);
+		}
 		this.cards.put(playerNumber, oldCards);
 		this.notifyPlayersCards(playerNumber);
 	}
@@ -449,7 +477,12 @@ public class Engine {
 	 * @return
 	 */
 	private boolean alreadyBuilded(int playerNumber, Card buildCard) {
-		return this.city.get(playerNumber).contains(buildCard);
+		for (Card card : this.city.get(playerNumber)) {
+			if (card.name.equals(buildCard.name)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/**
@@ -498,6 +531,7 @@ public class Engine {
 	 * Initialize the city of all players with an empty city.
 	 */
 	private void initializeCity() {
+		this.city = new HashMap<Integer, Set<Card>>(this.numberPlayers);
 		for (int i = 0; i < this.numberPlayers; i++) {
 			this.city.put(i, new HashSet<Card>(8));
 		}
@@ -516,6 +550,9 @@ public class Engine {
 	private void initializeGame() {
 		this.provideNumberPlayers();
 		this.providePlayerNumber();
+		this.initializeCoins(2);
+		this.initializeCards(4);
+		this.initializeCity();
 	}
 	
 	private void provideNumberPlayers() {
