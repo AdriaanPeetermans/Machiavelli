@@ -3,10 +3,14 @@ package testers;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Map;
 import java.util.Set;
 
 import game.player.Player;
+import game.helpers.Card;
 import game.helpers.Character;
+import game.helpers.Revenue;
+import game.helpers.charMove.CharMove;
 
 public class TestPlayer implements Player {
 	
@@ -139,6 +143,90 @@ public class TestPlayer implements Player {
 		default:
 			return null;
 		}
+	}
+
+	@Override
+	public void setActiveChar(Character character, int playerNumber) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setStolen(int stolenPlayer, int thiefPlayer) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setCoins(int playerNumber, int coins) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setCharMove(int activePlayer, CharMove charMove) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setCardsToChoose(Set<Card> cards) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setCards(int playerNumber, int numberCards) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setCards(Set<Card> cards) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setCity(int playerNumber, Set<Card> cards) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setPoints(Map<Integer, Integer> points) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setWinner(int playerNumber) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public CharMove getCharMove() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Revenue getRevenue() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Set<Card> getChosenCard() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Set<Card> getBuild() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

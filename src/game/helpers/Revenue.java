@@ -6,6 +6,10 @@ public class Revenue {
 		this.coins = coins;
 	}
 	
+	public boolean isCoins() {
+		return this.coins;
+	}
+	
 	private final boolean coins;
 
 }
