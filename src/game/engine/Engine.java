@@ -95,9 +95,39 @@ public class Engine {
 	private Character topChar;
 	
 	/**
+	 * This method will update the kinPlayer attribute to the given value and notify all players
+	 * via the method setKing(int).
+	 * 
+	 * @param kingPlayer	An integer representing the player who will be the next king.
+	 */
+	public void setKingPlayer(int kingPlayer) {
+		this.kingPlayer = kingPlayer;
+		for (Player player : this.players) {
+			player.setKing(kingPlayer);
+		}
+	}
+	
+	/**
 	 * This attribute contains the current king player number. The value is initialized to 0.
 	 */
 	private int kingPlayer = 0;
+	
+	/**
+	 * This method will set the current stolen player to the given stolen player character. This
+	 * method will also notify all players about this move by invoking the method setStolen(
+	 * Character, int).
+	 * 
+	 * @param stolenChar			If a player has this character during the current round, he will
+	 * 								get stolen.
+	 * @param currentPlayerNumber	An integer representing the current player, who will be a thief.
+	 */
+	public void setStolenPlayer(Character stolenChar, int currentPlayerNumber) {
+		int playerStolen = this.getCurrentPlayerNumber(stolenChar);
+		this.stolenPlayer = playerStolen;
+		for (Player player : this.players) {
+			player.setStolen(stolenChar, currentPlayerNumber);
+		}
+	}
 	
 	/**
 	 * This attribute contains the player number of the stolen player. It contains the value of -1
@@ -106,10 +136,36 @@ public class Engine {
 	private int stolenPlayer = -1;
 	
 	/**
+	 * This method will set the current thief player to the given thief player.
+	 * 
+	 * @param thiefPlayer	An integer representing the player that was the thief.
+	 */
+	public void setThiefPlayer(int thiefPlayer) {
+		this.thiefPlayer = thiefPlayer;
+	}
+	
+	/**
 	 * This attribute contains the player number that steals. It contains the value of -1 if no
 	 * player is stolen.
 	 */
 	private int thiefPlayer = -1;
+	
+	/**
+	 * This method will set the current killed character. It will also notify all players about the
+	 * new killed character via the method setKilledChar(Character).
+	 * 
+	 * @param killedChar	The character that will be killed during this round.
+	 */
+	public void setKilledChar(Character killedChar) {
+		this.killedChar = killedChar;
+		for (Player player : this.players) {
+			player.setKilledChar(killedChar);
+		}
+	}
+	
+	public Character getKilledChar() {
+		return this.killedChar;
+	}
 	
 	/**
 	 * This attribute represents the current character that is killed for this round. The player who
@@ -166,6 +222,7 @@ public class Engine {
 		for (Player otherPlayers : this.players) {
 			otherPlayers.setActiveChar(character, currentPlayerNumber);
 		}
+		this.resetAskedBuildingCoin();
 		this.handleStolen(currentPlayerNumber);
 		this.getCharMove(currentPlayerNumber);
 		Revenue revenue = currentPlayer.getRevenue();
@@ -312,7 +369,7 @@ public class Engine {
 	 * @param move
 	 */
 	private void handleCharMove(int playerNumber, CharMove move) {
-		
+		move.execute(this, playerNumber);
 	}
 	
 	/**
@@ -322,7 +379,7 @@ public class Engine {
 	 * @return
 	 */
 	private boolean isValidCharMove(int playerNumber, CharMove move) {
-		return true;
+		return move.isValid(this, playerNumber);
 	}
 	
 	/**
@@ -343,6 +400,17 @@ public class Engine {
 			this.stolenPlayer = -1;
 			this.thiefPlayer = -1;
 		}
+	}
+	
+	/**
+	 * This method will add the given number of coins to the amount the player represented by the
+	 * given player number owns.
+	 * 
+	 * @param playerNumber	An integer representing the player who will receive the given coins.
+	 * @param numberCoins	The number of coins to be added.
+	 */
+	public void addCoins(int playerNumber, int numberCoins) {
+		this.setCoins(playerNumber, this.getCoins(playerNumber) + numberCoins);
 	}
 	
 	/**
@@ -377,6 +445,38 @@ public class Engine {
 	}
 	
 	private HashMap<Integer, Integer> coins;
+	
+	/**
+	 * This method will remove the given set of cards from the set of cards the given player owns.
+	 * The given player will receive an equal amount of cards freshly drawn from the deck of cards.
+	 * All players will be notified of this interchange by the methods removeCards(int, Set<Card>)
+	 * and addCards(int, Set<Card>).
+	 * 
+	 * @param playerNumber	An integer representing the player that wants to execute the move.
+	 * @param cards			The set of cards that will be changed.
+	 */
+	public void switchCardsDeck(int playerNumber, Set<Card> cards) {
+		this.removeCards(playerNumber, cards);
+		Set<Card> newCards = this.cardDeck.drawCard(cards.size());
+		this.addCards(playerNumber, newCards);
+	}
+	
+	/**
+	 * This method will interchange the cards owned by player1 to the cards owned by player2. All
+	 * players will be notified of this interchange, by the methods removeCards(int, Set<Card>) and
+	 * addCards(int, Set<Card>).
+	 * 
+	 * @param playerNumber1	The first player that will change his cards with the second player.
+	 * @param playerNumber2	The second player that will change this card with the first player.
+	 */
+	public void switchCards(int playerNumber1, int playerNumber2) {
+		Set<Card> player1Cards = this.getCards(playerNumber1);
+		Set<Card> player2Cards = this.getCards(playerNumber2);
+		this.removeCards(playerNumber1, player1Cards);
+		this.removeCards(playerNumber2, player2Cards);
+		this.addCards(playerNumber1, player2Cards);
+		this.addCards(playerNumber2, player1Cards);
+	}
 	
 	private void initializeCards(int numberCards) {
 		this.cards = new HashMap<Integer, Set<Card>>(this.numberPlayers);
@@ -457,9 +557,9 @@ public class Engine {
 	 * @param playerNumber	An integer representing the player for who the owned set of cards should
 	 * 						be returned.
 	 * 
-	 * @return				A set of cards ownedby the given player.
+	 * @return				A set of cards owned by the given player.
 	 */
-	private Set<Card> getCards(int playerNumber) {
+	public Set<Card> getCards(int playerNumber) {
 		return this.cards.get(playerNumber);
 	}
 	
@@ -467,6 +567,41 @@ public class Engine {
 	 * This map contains the sets of cards that each player owns.
 	 */
 	private HashMap<Integer, Set<Card>> cards;
+	
+	/**
+	 * This method will add the given building to the set of buildings the current active player has
+	 * already asked coins for.
+	 * 
+	 * @param building	The building that will be added to the list.
+	 */
+	public void addAskedBuildingCoin(Card building) {
+		this.askedBuildingCoins.add(building);
+	}
+	
+	/**
+	 * This method will reinitialize the set containing the buildings the active player already has
+	 * asked coins for.
+	 */
+	private void resetAskedBuildingCoin() {
+		this.askedBuildingCoins = new HashSet<Card>(8);
+	}
+	
+	/**
+	 * This method will return a boolean stating if the given player has asked coins for the given
+	 * building.
+	 * 
+	 * @param building	The building to be checked.
+	 * 
+	 * @return			A boolean stating if the building has already provided a coin.
+	 */
+	public boolean alreadyAskedBuildingCoin(Card building) {
+		return this.askedBuildingCoins.contains(building);
+	}
+	
+	/**
+	 * This set will contain all buildings the current player has already asked coins for.
+	 */
+	private HashSet<Card> askedBuildingCoins;
 	
 	/**
 	 * This method will check if the given player already has built the given build card.

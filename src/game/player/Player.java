@@ -96,6 +96,23 @@ public interface Player {
 	public void setActiveChar(Character character, int playerNumber);
 	
 	/**
+	 * Notify all players that the given character will be killed during this round.
+	 * 
+	 * @param killedChar	The character that will be killed during this round.
+	 */
+	public void setKilledChar(Character killedChar);
+	
+	/**
+	 * Notify all players that the given character will get stolen by the current active player, 
+	 * who will be the thief. If the given character was chosen, then later in this round the method
+	 * setStolen(int, int) will be invoked.
+	 * 
+	 * @param stolenChar	A character chosen to be stolen by the thief.
+	 * @param thiefPlayer	An integer representing the current player, who is a thief by default.
+	 */
+	public void setStolen(Character stolenChar, int thiefPlayer);
+	
+	/**
 	 * Notify all players that the current active player gets stolen by the thief. The stolenPlayer
 	 * will be the current active player. This method will be followed by an invocation of the
 	 * methods setCoins(stolenPlayer, coins) and setCoins(thiefPlayer, coins).
